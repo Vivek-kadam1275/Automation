@@ -12,7 +12,9 @@ DOM - Document Object Model
 	Ex: 	/html/body/header/div/div/div[2]/div/input
 
 2) Relative xpath(partial xpath)
-	Ex: //*[@name="search"]
+	Ex: //*[@name="search"]	   
+		here * is called as wildcard, it matches any html tag
+		you need to use * or specific tag name, you cannot leave it empty
 
 Which xpath will be prefered?
 Relative xpath: If you make changes in ui( add, delete) you also need to change your absoulte xpath, so preferred is  Relative xpath.
