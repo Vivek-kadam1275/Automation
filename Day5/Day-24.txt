@@ -15,7 +15,7 @@ DOM - Document Object Model
 	Ex: //*[@name="search"]
 
 Which xpath will be prefered?
-Relative xpath.
+Relative xpath: If you make changes in ui( add, delete) you also need to change your absoulte xpath, so preferred is  Relative xpath.
 
 
 Difference between Absolute & Relative xpaths?
