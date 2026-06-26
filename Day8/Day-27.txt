@@ -20,21 +20,23 @@ DisAdv
 -------------
 1) if the time is not suffitient then you will get exception
 2) it will wait for maximum time out. this will reduce the performace script.
-3) multiple times 
+3) multiple times ( you need to use everytime before locating element )
 
 
 implicit wait
 -----------
 driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
-
+10 sec is standard time
 Adv:
 1) single time/one statement
 2) it will not wait till maximum time if the element is availble
-3) Applicable for all the elements
+3) Applicable for all the elements( global setting)
 4) easy to use
 
 Disadvantge:
 1) if the time is not suffitient then you will get exception
+2) not flexible ( means cannot use at specific, it is applied to all elements )
+3) cannot specify for which condition to wait
 
 
 explicit wait
@@ -44,6 +46,14 @@ works based on the time and condition
 declaration
 use
 
+advantages:
+more flexible: you can use for specific element
+specify condition: you can specify condition for waiting
+more efficient 
+
+disadvantages:
+some complex to use
+ 
 points
 ---------
 1) Conditional based, it will work more effectively.
