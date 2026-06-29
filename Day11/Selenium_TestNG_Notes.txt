@@ -1,0 +1,180 @@
+SELENIUM + TESTNG COMPLETE NOTES (WITH HTML + CODE)
+
+========================================
+1. WHAT IS TESTNG
+========================================
+TestNG is a testing framework used to:
+- Execute test cases
+- Control execution flow
+- Generate reports
+- Perform validations
+
+========================================
+2. BASIC TESTNG + SELENIUM EXAMPLE
+========================================
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.annotations.*;
+
+public class TestExample {
+
+    WebDriver driver;
+
+    @BeforeMethod
+    public void setup() {
+        driver = new ChromeDriver();
+    }
+
+    @Test
+    public void openGoogle() {
+        driver.get("https://www.google.com");
+        System.out.println(driver.getTitle());
+    }
+
+    @AfterMethod
+    public void teardown() {
+        driver.quit();
+    }
+}
+
+========================================
+3. IMPORTANT ANNOTATIONS
+========================================
+@BeforeMethod → runs before each test
+@AfterMethod → runs after each test
+@BeforeClass → runs once before all tests
+@AfterClass → runs once after all tests
+@Test → marks test case
+
+Execution Flow:
+BeforeMethod → Test → AfterMethod
+
+========================================
+4. ASSERTIONS
+========================================
+Used for validation
+
+import org.testng.Assert;
+
+@Test
+public void testTitle() {
+    String title = driver.getTitle();
+    Assert.assertEquals(title, "Google");
+}
+
+========================================
+5. DATAPROVIDER (DATA-DRIVEN TESTING)
+========================================
+
+import org.testng.annotations.DataProvider;
+
+@DataProvider
+public Object[][] data() {
+    return new Object[][]{
+        {"admin", "123"},
+        {"user", "abc"}
+    };
+}
+
+@Test(dataProvider = "data")
+public void loginTest(String username, String password) {
+    System.out.println(username + " " + password);
+}
+
+========================================
+6. GROUPS
+========================================
+
+@Test(groups = "smoke")
+public void smokeTest() {}
+
+@Test(groups = "regression")
+public void regTest() {}
+
+========================================
+7. TESTNG XML SUITE
+========================================
+
+<suite name="Suite1">
+  <test name="Test1">
+    <classes>
+      <class name="TestExample"/>
+    </classes>
+  </test>
+</suite>
+
+========================================
+8. SELENIUM SAMPLE HTML (FOR PRACTICE)
+========================================
+
+<html>
+<body>
+
+<h2>Login Page</h2>
+
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+<button id="login">Login</button>
+
+</body>
+</html>
+
+========================================
+9. SELENIUM TEST USING ABOVE HTML
+========================================
+
+@Test
+public void loginTest() {
+    driver.get("file:///C:/test.html");
+
+    driver.findElement(By.id("username")).sendKeys("admin");
+    driver.findElement(By.id("password")).sendKeys("123");
+    driver.findElement(By.id("login")).click();
+}
+
+========================================
+10. FRAME + DROPDOWN SAMPLE HTML
+========================================
+
+<html>
+<body>
+
+<iframe id="frame1">
+    <input type="text" id="email">
+</iframe>
+
+<select id="country">
+    <option>India</option>
+    <option>USA</option>
+</select>
+
+</body>
+</html>
+
+========================================
+11. FRAME + DROPDOWN CODE
+========================================
+
+// Frame
+
+driver.switchTo().frame("frame1");
+driver.findElement(By.id("email")).sendKeys("test");
+driver.switchTo().defaultContent();
+
+// Dropdown
+
+WebElement element = driver.findElement(By.id("country"));
+Select sel = new Select(element);
+sel.selectByVisibleText("India");
+
+========================================
+12. FINAL SUMMARY
+========================================
+- TestNG helps manage tests
+- Use @BeforeMethod for WebDriver
+- Use Assertions for validation
+- Use DataProvider for multiple data
+- Use Select class for dropdown
+- Use switchTo() for frames and alerts
+
