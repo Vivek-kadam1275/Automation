@@ -1,0 +1,128 @@
+SELENIUM 1-WEEK LEARNING PLAN + PROGRESS CHECK
+
+========================================
+YOUR CURRENT STATUS ANALYSIS
+========================================
+You have already completed:
+
+1. Software Testing Basics ✅
+2. Core Java ✅
+3. Selenium WebDriver ✅
+4. Locators (ID, Name, LinkText, CSS, XPath) ✅
+5. XPath (axes, contains, text) ✅
+6. WebDriver methods ✅
+7. Waits (Implicit, Explicit) ✅
+8. Navigation & Window Handling ✅
+9. Checkboxes & Radio Buttons ✅
+10. Alerts, Frames, Dropdowns ✅
+
+➡️ You have completed ~80% Selenium Core ✅
+
+========================================
+WHAT IS STILL REQUIRED (IMPORTANT)
+========================================
+To become interview + project ready:
+
+1. TestNG Framework (VERY IMPORTANT)
+2. DataProvider (MUST LEARN)
+3. Page Object Model (POM)
+4. Web Tables (Static & Dynamic)
+5. Selenium Grid (Concept Only)
+
+========================================
+WEEK PLAN (SMART STRUCTURE)
+========================================
+
+DAY 1:
+- WebDriver basics
+- Locators (ID, Name, CSS)
+
+DAY 2:
+- XPath (relative, contains, text, axes)
+
+DAY 3:
+- WebDriver methods (get, navigate, manage)
+
+DAY 4:
+- Waits (Implicit, Explicit, ExpectedConditions)
+
+DAY 5:
+- Window handling
+- Checkboxes & Radio buttons
+- Alerts
+- Frames
+- Dropdowns
+
+DAY 6 (VERY IMPORTANT):
+- TestNG Framework
+    Topics:
+    - @Test
+    - @BeforeMethod, @AfterMethod
+    - priority
+    - assertions
+    - groups
+
+    Practice:
+    - Convert Selenium scripts into TestNG tests
+
+DAY 7:
+- DataProvider
+    - Multiple data execution
+    - Login test example
+
+- Page Object Model (POM)
+    - Separate page classes
+    - Locators + methods
+    - Reusability
+
+DAY 8 (OPTIONAL but IMPORTANT):
+- Web Tables
+    - Count rows & columns
+    - Fetch data dynamically
+
+- Selenium Grid (Basic Concepts)
+    - Hub & Node
+    - RemoteWebDriver
+    - Parallel execution concept
+
+========================================
+FINAL CHECKLIST BEFORE INTERVIEW
+========================================
+
+CORE SELENIUM:
+✔ WebDriver
+✔ Locators
+✔ XPath
+✔ Waits
+✔ WebElement Actions
+
+ELEMENT HANDLING:
+✔ Alerts
+✔ Frames
+✔ Dropdowns
+✔ Windows
+✔ Tables
+
+FRAMEWORK:
+✔ TestNG
+✔ DataProvider
+✔ Page Object Model
+
+CONCEPTUAL:
+✔ Selenium Grid
+
+========================================
+FINAL ADVICE
+========================================
+- Focus on writing working scripts ✅
+- Practice login automation scenario ✅
+- Avoid going too deep into advanced frameworks ❌
+
+========================================
+NEXT STEP FOR YOU
+========================================
+1. Learn TestNG thoroughly ✅
+2. Practice DataProvider ✅
+3. Implement POM ✅
+4. Build 1 mini project ✅
+
