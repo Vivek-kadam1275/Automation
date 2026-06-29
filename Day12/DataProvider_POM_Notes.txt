@@ -1,0 +1,183 @@
+DATA PROVIDER + PAGE OBJECT MODEL (POM) NOTES WITH CODE
+
+==========================================
+1. DATA PROVIDER (TestNG)
+==========================================
+
+Definition:
+DataProvider is used to run the same test multiple times with different sets of data.
+
+Syntax:
+@DataProvider(name="data")
+public Object[][] getData() {
+    return new Object[][]{
+        {"user1", "pass1"},
+        {"user2", "pass2"}
+    };
+}
+
+@Test(dataProvider="data")
+public void test(String username, String password) {
+    System.out.println(username + " " + password);
+}
+
+How it works:
+- Each row represents one test execution
+- Columns are parameters passed to test method
+
+------------------------------------------
+REAL SELENIUM LOGIN EXAMPLE
+------------------------------------------
+
+HTML:
+<input id="username">
+<input id="password">
+<button id="login">Login</button>
+
+Code:
+
+public class LoginTest {
+
+    WebDriver driver;
+
+    @BeforeMethod
+    public void setup() {
+        driver = new ChromeDriver();
+        driver.get("file:///C:/login.html");
+    }
+
+    @DataProvider(name="loginData")
+    public Object[][] data() {
+        return new Object[][]{
+            {"admin","123"},
+            {"user","wrong"}
+        };
+    }
+
+    @Test(dataProvider="loginData")
+    public void loginTest(String user, String pass){
+        driver.findElement(By.id("username")).sendKeys(user);
+        driver.findElement(By.id("password")).sendKeys(pass);
+        driver.findElement(By.id("login")).click();
+    }
+
+    @AfterMethod
+    public void teardown(){
+        driver.quit();
+    }
+}
+
+------------------------------------------
+ADVANCED DATA PROVIDER
+------------------------------------------
+- Can be placed in separate class
+- Can run in parallel: @DataProvider(parallel=true)
+
+==========================================
+2. PAGE OBJECT MODEL (POM)
+==========================================
+
+Definition:
+POM is a design pattern where each webpage is represented as a class with locators and methods.
+
+Goal:
+- Improve code reusability
+- Separate UI elements from test logic
+
+------------------------------------------
+WITHOUT POM (BAD PRACTICE)
+------------------------------------------
+
+@Test
+public void loginTest(){
+    driver.findElement(By.id("username")).sendKeys("admin");
+    driver.findElement(By.id("password")).sendKeys("123");
+    driver.findElement(By.id("login")).click();
+}
+
+------------------------------------------
+WITH POM (BEST PRACTICE)
+------------------------------------------
+
+STEP 1: Create Page Class
+
+public class LoginPage {
+
+    WebDriver driver;
+
+    public LoginPage(WebDriver driver){
+        this.driver = driver;
+    }
+
+    By username = By.id("username");
+    By password = By.id("password");
+    By loginBtn = By.id("login");
+
+    public void enterUsername(String user){
+        driver.findElement(username).sendKeys(user);
+    }
+
+    public void enterPassword(String pass){
+        driver.findElement(password).sendKeys(pass);
+    }
+
+    public void clickLogin(){
+        driver.findElement(loginBtn).click();
+    }
+}
+
+------------------------------------------
+STEP 2: Create Test Class
+------------------------------------------
+
+public class LoginTest {
+
+    WebDriver driver;
+    LoginPage login;
+
+    @BeforeMethod
+    public void setup(){
+        driver = new ChromeDriver();
+        driver.get("file:///C:/login.html");
+        login = new LoginPage(driver);
+    }
+
+    @Test
+    public void testLogin(){
+        login.enterUsername("admin");
+        login.enterPassword("123");
+        login.clickLogin();
+    }
+
+    @AfterMethod
+    public void teardown(){
+        driver.quit();
+    }
+}
+
+------------------------------------------
+COMBINING POM + DATAPROVIDER
+------------------------------------------
+
+@Test(dataProvider="loginData")
+public void loginTest(String user, String pass){
+    login.enterUsername(user);
+    login.enterPassword(pass);
+    login.clickLogin();
+}
+
+==========================================
+FINAL SUMMARY
+==========================================
+
+DataProvider:
+- Provides multiple data sets
+- Runs test multiple times
+
+POM:
+- Separates UI and logic
+- Improves maintainability
+
+Together:
+- Used in all real Selenium frameworks
+
