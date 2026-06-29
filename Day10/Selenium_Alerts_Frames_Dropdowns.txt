@@ -1,0 +1,180 @@
+SELENIUM HANDLING NOTES (ALERTS, FRAMES, DROPDOWNS)
+
+============================
+1. ALERTS
+============================
+
+Definition:
+Alerts are browser popups. They are NOT part of HTML DOM.
+
+Types:
+1. Simple Alert (OK button)
+2. Confirmation Alert (OK / Cancel)
+3. Prompt Alert (Input box)
+
+HTML Representation:
+(Alerts are NOT in HTML, they are browser-level popups)
+
+Handling Alerts:
+Alert alert = driver.switchTo().alert();
+
+Operations:
+- alert.accept();        // click OK
+- alert.dismiss();       // click Cancel
+- alert.getText();       // get alert text
+- alert.sendKeys('text'); // enter text (prompt alert)
+
+Example Code:
+WebDriver driver = new ChromeDriver();
+driver.get('https://example.com');
+
+Alert alert = driver.switchTo().alert();
+System.out.println(alert.getText());
+alert.accept();
+
+Using Explicit Wait:
+WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+Alert alert = wait.until(ExpectedConditions.alertIsPresent());
+alert.accept();
+
+IMPORTANT:
+- Alerts cannot be handled using findElement()
+- Must use switchTo().alert()
+
+============================
+2. FRAMES
+============================
+
+Definition:
+Frame (iframe) is a webpage inside another webpage.
+
+HTML Example:
+<iframe id='loginFrame'>
+    <input type='text' id='username'>
+</iframe>
+
+Problem:
+Selenium cannot access elements inside frame directly.
+
+Solution:
+Switch to frame first.
+
+Ways to switch:
+- driver.switchTo().frame('id_or_name');
+- driver.switchTo().frame(index);
+- driver.switchTo().frame(WebElement);
+
+Example Code:
+WebDriver driver = new ChromeDriver();
+driver.get('https://example.com');
+
+driver.switchTo().frame('loginFrame');
+driver.findElement(By.id('username')).sendKeys('admin');
+
+driver.switchTo().defaultContent();
+
+Nested Frame Example:
+<iframe id='outer'>
+    <iframe id='inner'>
+        <input id='email'>
+    </iframe>
+</iframe>
+
+Code:
+driver.switchTo().frame('outer');
+driver.switchTo().frame('inner');
+driver.findElement(By.id('email')).sendKeys('test');
+
+Switching Back:
+- driver.switchTo().defaultContent();  // go to main page
+- driver.switchTo().parentFrame();    // go one level up
+
+IMPORTANT:
+- Must switch to frame first
+- defaultContent() exits all frames
+
+============================
+3. DROPDOWNS
+============================
+
+Types:
+1. Select Dropdown (HTML select tag)
+2. Custom/Hidden Dropdown (div based)
+3. Multi-select Dropdown
+
+--------------------------------
+A) SELECT DROPDOWN
+--------------------------------
+
+HTML:
+<select id='country'>
+    <option value='in'>India</option>
+    <option value='us'>USA</option>
+</select>
+
+Handling using Select class:
+WebElement element = driver.findElement(By.id('country'));
+Select sel = new Select(element);
+
+Operations:
+- sel.selectByVisibleText('India');
+- sel.selectByValue('us');
+- sel.selectByIndex(1);
+
+Get all options:
+List<WebElement> options = sel.getOptions();
+for(WebElement op : options){
+    System.out.println(op.getText());
+}
+
+--------------------------------
+B) CUSTOM / HIDDEN DROPDOWN
+--------------------------------
+
+HTML:
+<div id='dropdown'>
+    <div>India</div>
+    <div>USA</div>
+</div>
+
+Handling:
+driver.findElement(By.id('dropdown')).click();
+driver.findElement(By.xpath("//div[text()='India']")).click();
+
+NOTE:
+- Select class cannot be used
+- Use click and XPath
+
+--------------------------------
+C) MULTI-SELECT DROPDOWN
+--------------------------------
+
+HTML:
+<select id='colors' multiple>
+    <option>Red</option>
+    <option>Green</option>
+</select>
+
+Code:
+Select sel = new Select(driver.findElement(By.id('colors')));
+sel.selectByVisibleText('Red');
+sel.selectByVisibleText('Green');
+
+Check multiple:
+sel.isMultiple();
+
+============================
+FINAL SUMMARY
+============================
+
+ALERTS:
+- switchTo().alert()
+- accept(), dismiss(), getText()
+
+FRAMES:
+- switchTo().frame()
+- defaultContent(), parentFrame()
+
+DROPDOWNS:
+- Select class for <select>
+- click() for custom dropdown
