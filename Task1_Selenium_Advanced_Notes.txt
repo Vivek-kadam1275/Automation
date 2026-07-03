@@ -1,0 +1,331 @@
+TASK 1 - SELENIUM LEARNING NOTES (DETAILED REVISION)
+
+====================================================
+1. TESTNG
+====================================================
+
+What is TestNG?
+TestNG is a testing framework used with Selenium to organize, execute, validate, and report test cases.
+
+Benefits:
+- Multiple test execution
+- Assertions/validation
+- Test reports
+- Data-driven testing
+- Execution control
+- Grouping of tests
+
+----------------------------------------------------
+IMPORTANT ANNOTATIONS
+----------------------------------------------------
+
+@BeforeMethod
+- Runs before EACH test case.
+- Common use: Launch browser.
+
+@AfterMethod
+- Runs after EACH test case.
+- Common use: Close browser.
+
+@BeforeClass
+- Runs ONCE before all test methods in a class.
+
+@AfterClass
+- Runs ONCE after all test methods.
+
+@Test
+- Marks a method as a test case.
+
+Execution Flow:
+@BeforeMethod -> @Test -> @AfterMethod
+
+Example:
+
+@BeforeMethod
+public void setup(){
+    driver = new ChromeDriver();
+}
+
+@Test
+public void loginTest(){
+}
+
+@AfterMethod
+public void teardown(){
+    driver.quit();
+}
+
+----------------------------------------------------
+ASSERTIONS
+----------------------------------------------------
+
+Purpose:
+Validation of expected vs actual result.
+
+Example:
+Assert.assertEquals(actual, expected);
+
+Example:
+Assert.assertTrue(driver.getCurrentUrl().contains("dashboard"));
+
+Meaning:
+Checks whether login successfully navigated to dashboard page.
+
+PASS:
+URL contains 'dashboard'
+
+FAIL:
+AssertionError is thrown.
+
+====================================================
+2. DATAPROVIDER
+====================================================
+
+Purpose:
+Run same test multiple times using different inputs.
+
+Problem Without DataProvider:
+Need multiple test methods.
+
+DataProvider Solution:
+One test method + multiple datasets.
+
+Example:
+
+@DataProvider(name="loginData")
+public Object[][] data(){
+    return new Object[][]{
+        {"Admin","admin123"},
+        {"Admin","wrongpass"}
+    };
+}
+
+@Test(dataProvider="loginData")
+public void loginTest(String username,String password){
+}
+
+How It Works:
+
+Row 1 => Execution 1
+Row 2 => Execution 2
+
+Object[][] Structure:
+
+{
+ {"Admin","admin123"},
+ {"User","test123"}
+}
+
+Columns become method parameters.
+
+Advantages:
+- Reusable
+- Less code duplication
+- Real project usage
+
+====================================================
+3. PAGE OBJECT MODEL (POM)
+====================================================
+
+Definition:
+Design pattern where each page is represented by a separate Java class.
+
+Purpose:
+- Separate locators and test logic
+- Improve maintainability
+- Improve reusability
+
+----------------------------------------------------
+WITHOUT POM
+----------------------------------------------------
+
+@Test
+public void loginTest(){
+   driver.findElement(By.id("username")).sendKeys("Admin");
+   driver.findElement(By.id("password")).sendKeys("admin123");
+   driver.findElement(By.id("login")).click();
+}
+
+Problem:
+- Hard maintenance
+- Duplicate code
+
+----------------------------------------------------
+WITH POM
+----------------------------------------------------
+
+Page Class:
+
+public class LoginPage{
+
+   WebDriver driver;
+
+   By username = By.name("username");
+   By password = By.name("password");
+
+   public LoginPage(WebDriver driver){
+      this.driver = driver;
+   }
+
+   public void enterUsername(String user){
+      driver.findElement(username).sendKeys(user);
+   }
+
+   public void enterPassword(String pass){
+      driver.findElement(password).sendKeys(pass);
+   }
+}
+
+Test Class:
+
+LoginPage login = new LoginPage(driver);
+
+login.enterUsername("Admin");
+login.enterPassword("admin123");
+
+Benefits:
+- Cleaner code
+- Easy maintenance
+- Industry standard
+
+====================================================
+4. COMBINING DATAPROVIDER + POM
+====================================================
+
+@Test(dataProvider="loginData")
+public void loginTest(String user,String pass){
+
+    login.enterUsername(user);
+    login.enterPassword(pass);
+    login.clickLogin();
+}
+
+Real Framework Flow:
+
+DataProvider
+      |
+      v
+TestNG Test
+      |
+      v
+POM Methods
+      |
+      v
+Selenium Actions
+
+====================================================
+5. WEBDRIVERMANAGER
+====================================================
+
+Purpose:
+Automatically downloads and manages browser drivers.
+
+Example:
+
+WebDriverManager.chromedriver().setup();
+WebDriver driver = new ChromeDriver();
+
+What setup() Does:
+
+1. Detects browser version
+2. Downloads matching driver
+3. Configures driver path
+4. Stores driver in cache
+
+Important:
+setup() DOES NOT launch browser.
+
+Browser Launches Here:
+
+new ChromeDriver();
+
+Modern Selenium:
+
+Selenium Manager can often do this automatically.
+Therefore projects may run without WebDriverManager.
+
+====================================================
+6. ORANGEHRM AUTOMATION TASK
+====================================================
+
+Recommended Scenario:
+
+1. Open OrangeHRM
+2. Login
+3. Verify Dashboard
+4. Navigate to PIM
+5. Logout
+6. Verify Login page
+
+----------------------------------------------------
+TEST CASE 1
+----------------------------------------------------
+
+Valid Login
+
+Steps:
+- Enter Admin
+- Enter admin123
+- Click Login
+
+Validation:
+
+Assert.assertTrue(
+ driver.getCurrentUrl().contains("dashboard")
+);
+
+----------------------------------------------------
+TEST CASE 2
+----------------------------------------------------
+
+Invalid Login
+
+Steps:
+- Enter wrong password
+- Click Login
+
+Validation:
+Verify error message displayed.
+
+----------------------------------------------------
+TEST CASE 3
+----------------------------------------------------
+
+Logout Test
+
+Steps:
+- Login
+- Click profile icon
+- Click Logout
+
+Validation:
+Verify login page displayed.
+
+====================================================
+7. PROFESSIONAL PROJECT STRUCTURE
+====================================================
+
+src/test/java
+|
+|-- pages
+|     |-- LoginPage.java
+|     |-- DashboardPage.java
+|
+|-- tests
+|     |-- LoginTest.java
+|
+|-- utilities
+|     |-- DataProviders.java
+
+====================================================
+FINAL INTERVIEW TAKEAWAYS
+====================================================
+
+1. @BeforeMethod runs before every test case.
+2. @AfterMethod runs after every test case.
+3. Assertions validate expected behavior.
+4. DataProvider executes same test with multiple inputs.
+5. POM separates locators from test logic.
+6. WebDriverManager manages browser drivers.
+7. Real automation = Action + Validation.
+8. Login automation should always include assertions.
