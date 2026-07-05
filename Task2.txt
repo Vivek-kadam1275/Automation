@@ -1,0 +1,473 @@
+
+1. Open download page
+2. Verify download button visible
+3. Click download button
+4. Wait for file download
+5. Verify file exists
+6. Verify file size > 0
+7. Assert success
+
+
+
+
+Click Download
+      ↓
+Wait for file to appear
+      ↓
+Check file exists
+      ↓
+Check file size > 0
+
+
+
+
+org.openqa.selenium.ElementClickInterceptedException:
+selenium can locate the element using dom, but to perform the action on it, it needs to visible on viewport of page, so we need to perform some kind of scrolling else we can get the runtime exception of ElementClickInterceptedException
+
+
+
+
+
+
+WebDriver   			JavascriptExecutor
+
+		
+
+		
+		ChromeDriver
+
+
+
+WebDriver driver=new ChromeDriver();
+
+
+JavascriptExecutor js=(JavascriptExecutor) driver;
+
+
+
+
+
+
+
+
+MASTER NOTES - TASK 2 FILE DOWNLOAD AUTOMATION (SELENIUM)
+
+============================================================
+1. TASK OVERVIEW
+============================================================
+
+Objective:
+1. Open https://practice-automation.com/
+2. Scroll down homepage.
+3. Click File Download.
+4. Navigate to File Download page.
+5. Click Download button.
+6. Verify file downloaded successfully.
+
+============================================================
+2. PROBLEM FACED
+============================================================
+
+Code:
+
+driver.findElement(downloadPageLocator).click();
+
+Exception:
+
+ElementClickInterceptedException
+
+Meaning:
+Selenium found the element but Chrome refused to perform the click because some other element was receiving the click.
+
+============================================================
+3. FIND ELEMENT VS CLICK ELEMENT
+============================================================
+
+findElement():
+- Searches DOM.
+- Can locate element even if off-screen.
+- Can locate hidden elements.
+
+click():
+- Performs browser interaction.
+- Requires element to be interactable.
+- Requires click location to be accessible.
+
+Important:
+Finding an element does NOT guarantee clicking it.
+
+============================================================
+4. DOM VS VIEWPORT
+============================================================
+
+DOM:
+- Entire page structure.
+- Selenium can search whole DOM.
+
+Viewport:
+- Visible portion of page.
+- Browser can only perform user interactions on visible area.
+
+File Download link existed in DOM.
+But it was below visible viewport.
+
+============================================================
+5. WHY SCROLLING BECAME NECESSARY
+============================================================
+
+The element was present far below the page.
+
+Therefore:
+
+findElement() -> Success
+click() -> Failure
+
+because browser needed the element to be brought into view.
+
+============================================================
+6. JAVASCRIPTEXECUTOR
+============================================================
+
+Purpose:
+Run JavaScript directly inside browser.
+
+Syntax:
+
+JavascriptExecutor js = (JavascriptExecutor) driver;
+
+Common Uses:
+- Scroll page
+- JavaScript click
+- Highlight element
+- Retrieve hidden values
+- Execute custom scripts
+
+============================================================
+7. UNDERSTANDING THE SCROLL CODE
+============================================================
+
+WebElement downloadPageButton =
+        driver.findElement(downloadPageLocator);
+
+JavascriptExecutor js =
+        (JavascriptExecutor) driver;
+
+js.executeScript(
+    "arguments[0].scrollIntoView({block:'center'});",
+    downloadPageButton);
+
+Explanation:
+
+Step 1:
+Find the target element.
+
+Step 2:
+Cast driver to JavascriptExecutor.
+
+Step 3:
+Execute JavaScript inside browser.
+
+Step 4:
+Browser scrolls until element becomes visible.
+
+============================================================
+8. WHAT IS arguments[0]?
+============================================================
+
+arguments[0]
+=
+first parameter passed from Java.
+
+Example:
+
+js.executeScript(
+    "arguments[0].click();",
+    element);
+
+Here:
+
+arguments[0] = element
+
+============================================================
+9. WHY CLICK STILL FAILED AFTER SCROLLING
+============================================================
+
+Observations:
+
+isDisplayed() = true
+isEnabled() = true
+scrollIntoView() executed
+
+Yet:
+
+ElementClickInterceptedException
+
+Reason:
+A real Selenium click performs browser checks.
+
+Chrome checks:
+- Visible?
+- Enabled?
+- Covered by another element?
+- Safe click coordinate?
+
+Most likely causes:
+- Sticky header
+- Overlay
+- Animation
+- Floating widget
+- Layout shift
+
+Thus:
+
+Element existed
+Element visible
+Element enabled
+Click location obstructed
+
+============================================================
+10. WHY JAVASCRIPT CLICK WORKED
+============================================================
+
+Code:
+
+js.executeScript(
+    "arguments[0].click();",
+    element);
+
+JavaScript click:
+- Does not perform physical mouse movement.
+- Directly triggers click event.
+- Bypasses coordinate validation.
+
+Therefore it worked.
+
+============================================================
+11. WHY THREAD.SLEEP WORKED
+============================================================
+
+Possible sequence:
+
+Scroll starts
+↓
+Layout adjusts
+↓
+Animation completes
+↓
+Element becomes clickable
+
+Sleep gave browser time to stabilize.
+
+============================================================
+12. WEBDRIVER VS JAVASCRIPTEXECUTOR
+============================================================
+
+WebDriver:
+- get()
+- findElement()
+- click()
+- sendKeys()
+- navigate()
+
+JavascriptExecutor:
+- executeScript()
+- scrollIntoView()
+- JavaScript click
+- Custom browser scripts
+
+Rule:
+Use WebDriver first.
+Use JavascriptExecutor when Selenium commands are insufficient.
+
+============================================================
+13. WHY CASTING IS REQUIRED
+============================================================
+
+WebDriver driver = new ChromeDriver();
+
+Driver reference type = WebDriver
+
+Compiler only sees WebDriver methods.
+
+executeScript() belongs to JavascriptExecutor.
+
+Therefore:
+
+JavascriptExecutor js =
+    (JavascriptExecutor) driver;
+
+============================================================
+14. UPCASTING AND DOWNCASTING
+============================================================
+
+Upcasting:
+
+ChromeDriver driver = new ChromeDriver();
+WebDriver wd = driver;
+
+Automatic.
+
+Interface Cast:
+
+WebDriver wd = new ChromeDriver();
+JavascriptExecutor js =
+    (JavascriptExecutor) wd;
+
+Explicit cast required.
+
+Often referred to as downcasting in Selenium discussions.
+
+============================================================
+15. IMPLICIT WAIT
+============================================================
+
+Purpose:
+Wait for element lookup.
+
+Example:
+
+driver.manage().timeouts()
+      .implicitlyWait(Duration.ofSeconds(10));
+
+Waits for:
+- Element presence
+
+Does NOT wait for:
+- Clickability
+- Visibility issues
+- Overlapping elements
+
+============================================================
+16. EXPLICIT WAIT
+============================================================
+
+Purpose:
+Wait for specific conditions.
+
+Example:
+
+WebDriverWait wait =
+    new WebDriverWait(driver,
+    Duration.ofSeconds(10));
+
+Conditions:
+- visibilityOfElementLocated
+- elementToBeClickable
+- titleContains
+- urlContains
+
+============================================================
+17. PRESENCE VS VISIBILITY VS CLICKABILITY
+============================================================
+
+Presence:
+Element exists in DOM.
+
+Visibility:
+Element visible to user.
+
+Clickability:
+Visible + enabled.
+
+Important:
+Clickable condition does not always guarantee click success.
+
+============================================================
+18. ACTIONS CLASS
+============================================================
+
+Uses:
+- Hover
+- Right click
+- Double click
+- Drag and drop
+- Mouse movement
+
+Example:
+
+new Actions(driver)
+    .moveToElement(element)
+    .click()
+    .perform();
+
+============================================================
+19. WHY NOT USE ACTIONS EVERYWHERE?
+============================================================
+
+scrollIntoView():
+- Single responsibility.
+- Performs scrolling only.
+
+Actions:
+- Moves mouse.
+- Can trigger hover effects.
+- Can trigger UI changes.
+
+Therefore scrollIntoView() is generally preferred for pure scrolling.
+
+============================================================
+20. INDUSTRY CLICK STRATEGY
+============================================================
+
+1. element.click()
+2. scrollIntoView() + click()
+3. Actions click
+4. JavaScript click
+
+============================================================
+21. FILE DOWNLOAD VERIFICATION
+============================================================
+
+Validation Steps:
+
+1. Click Download.
+2. Wait for file creation.
+3. Verify file exists.
+4. Verify size > 0.
+5. Optionally verify content.
+
+Example checks:
+
+file.exists()
+file.length() > 0
+
+============================================================
+22. INTERVIEW QUESTIONS COVERED
+============================================================
+
+- Difference between DOM and viewport.
+- Difference between Presence and Visibility.
+- Difference between Visibility and Clickability.
+- Implicit vs Explicit Wait.
+- What is ElementClickInterceptedException?
+- What is JavascriptExecutor?
+- Why cast driver to JavascriptExecutor?
+- Is casting downcasting?
+- Difference between WebDriver and JavascriptExecutor.
+- When to use Actions Class?
+- How to verify file download?
+- Why can JavaScript click succeed when Selenium click fails?
+
+============================================================
+23. KEY TAKEAWAYS
+============================================================
+
+findElement() != clickable
+
+visible != clickable
+
+elementToBeClickable() != guaranteed success
+
+DOM visibility != viewport visibility
+
+scrollIntoView() brings element into viewport
+
+JavaScript click bypasses mouse interaction
+
+Selenium click behaves like a real browser click
+
+ElementClickInterceptedException means another element received the click
+
+Always verify file download instead of assuming success.
+
+
