@@ -1,0 +1,997 @@
+SELENIUM DAY 8 DETAILED NOTES
+Topics Covered:
+1. Data Provider using Excel (Data-Driven Testing)
+2. Web Tables (Static & Dynamic)
+3. Selenium Grid
+
+============================================================
+1. DATA-DRIVEN TESTING USING EXCEL
+============================================================
+
+WHAT IS DATA-DRIVEN TESTING?
+----------------------------
+Instead of hardcoding test data inside Java code, we store the test data
+outside the code (Excel file, CSV, Database, JSON, etc.) and use the same
+test logic with multiple data sets.
+
+Without Data-Driven Testing:
+
+@Test
+public void loginTest() {
+    login("Admin", "admin123");
+}
+
+Problem:
+- Hardcoded data
+- Difficult to maintain
+- Need multiple test cases for multiple users
+
+With Data-Driven Testing:
+
+Excel:
+--------------------------------
+Username    | Password
+--------------------------------
+Admin       | admin123
+Admin       | wrongpass
+User1       | test123
+--------------------------------
+
+One test method can run multiple times using this data.
+
+============================================================
+WHY EXCEL IS USED?
+============================================================
+
+Advantages:
+- Test data stays outside code.
+- Tester can modify data without modifying Java code.
+- Easy to add new test cases.
+- Widely used in real Selenium frameworks.
+
+Real Framework Flow:
+
+Excel File
+    ↓
+ExcelUtils
+    ↓
+DataProvider
+    ↓
+TestNG
+    ↓
+POM
+    ↓
+Selenium
+
+============================================================
+APACHE POI
+============================================================
+
+Apache POI is a Java library used to:
+- Read Excel files
+- Write Excel files
+- Update Excel files
+
+Maven Dependency:
+
+<dependency>
+    <groupId>org.apache.poi</groupId>
+    <artifactId>poi-ooxml</artifactId>
+    <version>5.4.1</version>
+</dependency>
+
+============================================================
+IMPORTANT APACHE POI CLASSES
+============================================================
+
+Workbook
+- Represents complete Excel file.
+
+Sheet
+- Represents sheet inside workbook.
+
+Row
+- Represents one row.
+
+Cell
+- Represents one cell.
+
+Hierarchy:
+
+Workbook
+   |
+   --> Sheet
+           |
+           --> Row
+                    |
+                    --> Cell
+
+============================================================
+READING EXCEL - COMPLETE FLOW
+============================================================
+
+FileInputStream file =
+    new FileInputStream("LoginData.xlsx");    // to open file for read data
+
+Workbook workbook =
+    WorkbookFactory.create(file);		// to convert it into workbook/ excel
+
+Sheet sheet =
+    workbook.getSheet("Sheet1");
+
+int rowCount =
+    sheet.getLastRowNum();
+
+for(int i=1;i<=rowCount;i++) {
+
+    String username =
+            sheet.getRow(i)
+                 .getCell(0)
+                 .toString();
+
+    String password =
+            sheet.getRow(i)
+                 .getCell(1)
+                 .toString();
+
+    System.out.println(username + " " + password);
+}
+
+Explanation:
+- Open Excel file.
+- Create workbook object.
+- Access sheet.
+- Count rows.
+- Read each row.
+- Read each cell.
+- Print data.
+
+============================================================
+DATAPROVIDER + EXCEL
+============================================================
+
+@DataProvider(name="loginData")
+public Object[][] getData(){
+
+    // Read Excel and build Object[][] dynamically
+
+    return data;
+}
+
+@Test(dataProvider="loginData")
+public void loginTest(String username,
+                      String password){
+
+}
+
+Execution:
+
+Row1: Admin, admin123
+↓
+Run1
+
+Row2: Admin, wrongpass
+↓
+Run2
+
+Row3: User1, test123
+↓
+Run3
+
+Same test runs multiple times.
+
+============================================================
+REAL LOGIN AUTOMATION FLOW
+============================================================
+
+Excel
+    ↓
+Username + Password
+    ↓
+sendKeys(username)
+sendKeys(password)
+    ↓
+Click Login
+    ↓
+Assert Result
+
+============================================================
+2. WEB TABLES
+============================================================
+
+WHAT IS A WEB TABLE?
+----------------------------
+A table displayed on a webpage using HTML.
+
+Example HTML:
+
+<table>
+    <tr>
+        <th>ID</th>
+        <th>Name</th>
+    </tr>
+
+    <tr>
+        <td>101</td>
+        <td>John</td>
+    </tr>
+</table>
+
+============================================================
+TYPES OF TABLES
+============================================================
+
+1. Static Table
+
+Data remains mostly fixed.
+
+Example:
+ID     Name
+101    John
+102    Smith
+
+2. Dynamic Table
+
+Data changes frequently.
+
+Example:
+Employee Lists
+Bank Transactions
+Order Lists
+HR Records
+
+============================================================
+COMMON OPERATIONS
+============================================================
+
+1. Count rows
+2. Count columns
+3. Read complete table
+4. Read specific cell
+5. Search value
+6. Verify table data
+
+============================================================
+COUNT ROWS
+============================================================
+
+List<WebElement> rows =
+driver.findElements(
+By.xpath("//*[@id='employees']//tr"));
+
+System.out.println(rows.size());
+
+============================================================
+COUNT COLUMNS
+============================================================
+
+List<WebElement> cols =
+ driver.findElements(
+ By.xpath("//*[@id='employees']//tr[1]/*"));
+
+System.out.println(cols.size());
+
+============================================================
+READ SPECIFIC CELL
+============================================================
+
+String value =
+ driver.findElement(
+ By.xpath("//*[@id='employees']//tr[2]/td[2]")
+ ).getText();
+
+Output:
+John
+
+============================================================
+READ ENTIRE TABLE
+============================================================
+
+for(int r=2;r<=rows;r++){
+
+    String id =
+    driver.findElement(
+    By.xpath("//table//tr["+r+"]/td[1]")
+    ).getText();
+
+    String name =
+    driver.findElement(
+    By.xpath("//table//tr["+r+"]/td[2]")
+    ).getText();
+
+    System.out.println(id + " " + name);
+}
+
+============================================================
+SEARCH IN DYNAMIC TABLE
+============================================================
+
+Goal:
+Find Smith's salary.
+
+Logic:
+- Iterate rows.
+- Compare Name column.
+- If Smith found:
+    - Read salary column.
+
+Common Project Use Cases:
+- Verify employee exists.
+- Verify transaction amount.
+- Verify order status.
+
+============================================================
+WEB TABLE VS EXCEL
+============================================================
+
+Excel:
+Workbook → Sheet → Row → Cell
+
+Web Table:
+Table → Row(tr) → Cell(td)
+
+This is why Excel concepts help understand Web Tables.
+
+============================================================
+3. SELENIUM GRID
+============================================================
+
+WHAT IS SELENIUM GRID?
+----------------------------
+Selenium Grid allows:
+
+- Remote Execution 
+- Cross Browser Execution
+- Parallel Execution
+
+============================================================
+PROBLEM WITHOUT GRID
+============================================================
+
+Chrome
+↓
+Firefox
+↓
+Edge
+
+Execution is sequential.
+
+Time increases.
+
+============================================================
+HUB AND NODE
+============================================================
+
+Hub:
+- Central manager.
+- Receives requests.
+- Chooses suitable node.
+
+Node:
+- Actual execution environment.
+- Contains browsers.
+- Executes Selenium commands.
+
+Architecture:
+
+                HUB
+                 |
+      ----------------------
+      |         |          |
+      ↓         ↓          ↓
+
+    Node1    Node2      Node3
+
+    Chrome   Firefox    Edge
+
+============================================================
+IMPORTANT UNDERSTANDING
+============================================================
+
+Node does NOT always mean a different machine.
+
+Node can be:
+
+- Same machine Chrome node
+- Same machine Firefox node
+- Different machine node
+- VM node
+- Docker node
+
+A node is simply an execution environment.
+
+============================================================
+REMOTEWEBDRIVER
+============================================================
+
+Local Execution:
+
+WebDriver driver =
+    new ChromeDriver();
+
+Browser opens on local machine.
+
+Remote Execution:
+
+WebDriver driver =
+    new RemoteWebDriver(
+        new URL("http://192.168.1.100:4444"),   // this is hub, request will go to this endpoint and after that it will fine Chrome node
+        new ChromeOptions()
+    );
+
+Browser opens on remote execution environment.
+
+============================================================
+KEY INTERVIEW QUESTION
+============================================================
+
+Does RemoteWebDriver automatically mean parallel execution?
+
+Answer:
+NO.
+
+RemoteWebDriver only means:
+
+Remote Execution.
+
+You can have:
+
+1 Test
+1 Browser
+1 Remote Machine
+
+without any parallel execution.
+
+============================================================
+HOW HUB KNOWS WHICH NODE TO SELECT?
+============================================================
+
+Example Grid:
+
+Hub
+ |
+ |-- Chrome Node
+ |
+ |-- Firefox Node
+ |
+ |-- Edge Node
+
+Request:
+
+new ChromeOptions()
+
+Hub understands:
+
+"I need Chrome browser"
+
+Hub automatically selects available Chrome Node.
+
+Node URL is NOT provided in the test script.
+
+Only Hub URL is provided.
+
+============================================================
+PARALLEL EXECUTION
+============================================================
+
+Definition:
+Multiple tests executing simultaneously.
+
+Without Parallel:
+
+Login Test
+↓
+Logout Test
+↓
+Search Test
+
+Sequential.
+
+With Parallel:
+
+Login Test
+||
+Logout Test
+||
+Search Test
+
+Simultaneous.
+
+============================================================
+TESTNG PARALLEL EXECUTION
+============================================================
+
+Parallel Methods:
+
+<suite parallel="methods"
+       thread-count="3">
+
+Runs multiple @Test methods simultaneously.
+
+------------------------------------------------------------
+Parallel Classes:
+------------------------------------------------------------
+
+<suite parallel="classes"
+       thread-count="2">
+
+Classes:
+
+LoginTest
+EmployeeTest
+
+Execution:
+
+LoginTest
+||
+EmployeeTest
+
+Preferred for many Selenium frameworks.
+
+------------------------------------------------------------
+Parallel Tests:
+------------------------------------------------------------
+
+<suite parallel="tests"
+       thread-count="2">
+
+<test name="Chrome">
+
+<test name="Firefox">
+
+Execution:
+
+Chrome Test Block
+||
+Firefox Test Block
+
+Most commonly used with Selenium Grid.
+
+============================================================
+PARALLEL CLASSES VS PARALLEL TESTS
+============================================================
+
+parallel="classes"
+
+- Runs Java classes simultaneously.
+- Example:
+  LoginTest || EmployeeTest
+
+parallel="tests"
+
+- Runs TestNG <test> blocks simultaneously.
+- Example:
+  Chrome Block || Firefox Block
+
+============================================================
+LOCAL VS REMOTE VS GRID
+============================================================
+
+1. ChromeDriver
+
+new ChromeDriver();
+
+Result:
+Local Execution
+
+------------------------------------------------------------
+
+2. RemoteWebDriver
+
+new RemoteWebDriver(...)
+
+Result:
+Remote Execution
+
+------------------------------------------------------------
+
+3. Selenium Grid
+
+RemoteWebDriver
++
+Hub
++
+Nodes
++
+Parallel Execution
+
+Result:
+Remote + Parallel + Cross Browser
+
+============================================================
+BEST INTERVIEW ONE-LINERS
+============================================================
+
+DataProvider:
+Run the same test with multiple datasets.
+
+Excel Data Driven Testing:
+Store data outside code and execute tests dynamically.
+
+Web Tables:
+Used to fetch, validate and manipulate tabular web data.
+
+RemoteWebDriver:
+Used for remote execution.
+
+Selenium Grid:
+Used for remote, cross-browser and parallel execution.
+
+Hub:
+Manager that receives requests and allocates nodes.
+
+Node:
+Execution environment that actually runs the browser.
+
+Parallel Execution:
+Running multiple tests simultaneously.
+
+Remote Execution:
+Running tests on another execution environment.
+
+
+
+
+
+
+============================================================
+4. TESTNG SUITE (testng.xml)
+============================================================
+
+WHAT IS A TEST SUITE?
+------------------------------------------------------------
+
+A Test Suite is a collection of test classes that can be executed together.
+
+Instead of running:
+
+LoginTest.java
+EmployeeTest.java
+PIMTest.java
+
+one by one,
+
+we can group them inside a testng.xml file and execute them together.
+
+------------------------------------------------------------
+WHERE IS A SUITE WRITTEN?
+------------------------------------------------------------
+
+A suite is written in a file named:
+
+testng.xml
+
+Typical Project Structure:
+
+Project
+│
+├── src
+│   └── test
+│
+├── pom.xml
+│
+└── testng.xml
+
+------------------------------------------------------------
+PURPOSE OF testng.xml
+------------------------------------------------------------
+
+testng.xml acts as an Execution Controller.
+
+It decides:
+
+- Which classes to execute
+- Execution order
+- Parallel execution
+- Number of threads
+- Browser parameters
+- Groups to execute
+
+Java classes contain test logic.
+
+testng.xml controls execution.
+
+------------------------------------------------------------
+BASIC SUITE EXAMPLE
+------------------------------------------------------------
+
+<!DOCTYPE suite SYSTEM
+"https://testng.org/testng-1.0.dtd">
+
+<suite name="RegressionSuite">
+
+    <test name="RegressionTests">
+
+        <classes>
+
+            <class name="tests.LoginTest"/>
+
+            <class name="tests.EmployeeTest"/>
+
+        </classes>
+
+    </test>
+
+</suite>
+
+Execution:
+
+LoginTest
+↓
+EmployeeTest
+
+------------------------------------------------------------
+HOW TO RUN A SUITE
+------------------------------------------------------------
+
+1. Create testng.xml
+
+2. Add classes inside it
+
+3. Right Click testng.xml
+
+4. Run testng.xml
+
+Result:
+All configured classes execute together.
+
+------------------------------------------------------------
+SUITE HIERARCHY
+------------------------------------------------------------
+
+Suite
+  |
+  └── Test
+          |
+          └── Classes
+                    |
+                    └── Test Methods
+
+Example:
+
+Suite
+ |
+ └── RegressionTests
+       |
+       ├── LoginTest
+       └── EmployeeTest
+
+------------------------------------------------------------
+PARALLEL = METHODS
+------------------------------------------------------------
+
+<suite parallel="methods"
+       thread-count="3">
+
+Meaning:
+
+Run multiple @Test methods in parallel.
+
+Example:
+
+public class LoginTest {
+
+    @Test
+    public void login(){}
+
+    @Test
+    public void logout(){}
+
+    @Test
+    public void search(){}
+}
+
+Execution:
+
+login()
+||
+logout()
+||
+search()
+
+All methods run simultaneously.
+
+------------------------------------------------------------
+PARALLEL = CLASSES
+------------------------------------------------------------
+
+<suite parallel="classes"
+       thread-count="2">
+
+Example:
+
+Classes:
+
+LoginTest
+EmployeeTest
+
+Execution:
+
+LoginTest
+||
+EmployeeTest
+
+Entire classes run simultaneously.
+
+Methods inside each class generally execute sequentially.
+
+Commonly used in Selenium frameworks.
+
+Advantages:
+- More stable
+- Better WebDriver isolation
+- Easier maintenance
+
+------------------------------------------------------------
+PARALLEL = TESTS
+------------------------------------------------------------
+
+<suite parallel="tests"
+       thread-count="2">
+
+    <test name="Chrome">
+
+        <classes>
+            <class name="tests.LoginTest"/>
+        </classes>
+
+    </test>
+
+    <test name="Firefox">
+
+        <classes>
+            <class name="tests.LoginTest"/>
+        </classes>
+
+    </test>
+
+</suite>
+
+Execution:
+
+Chrome Test Block
+||
+Firefox Test Block
+
+Most commonly used with Selenium Grid.
+
+------------------------------------------------------------
+PARALLEL CLASSES VS PARALLEL TESTS
+------------------------------------------------------------
+
+parallel="classes"
+
+Focus:
+Java Classes
+
+Example:
+
+LoginTest
+||
+EmployeeTest
+
+------------------------------------------------------------
+
+parallel="tests"
+
+Focus:
+<test> blocks inside testng.xml
+
+Example:
+
+Chrome Block
+||
+Firefox Block
+
+------------------------------------------------------------
+REAL SELENIUM GRID EXAMPLE
+------------------------------------------------------------
+
+<suite parallel="tests"
+       thread-count="3">
+
+    <test name="Chrome">
+        Browser = Chrome
+    </test>
+
+    <test name="Firefox">
+        Browser = Firefox
+    </test>
+
+    <test name="Edge">
+        Browser = Edge
+    </test>
+
+</suite>
+
+Execution:
+
+Chrome Browser
+||
+Firefox Browser
+||
+Edge Browser
+
+All execute simultaneously.
+
+------------------------------------------------------------
+INTERVIEW QUESTIONS
+------------------------------------------------------------
+
+Q. What is a TestNG Suite?
+
+Answer:
+A TestNG Suite is a collection of test classes grouped together and executed through a testng.xml file.
+
+------------------------------------------------------------
+
+Q. Where is a suite defined?
+
+Answer:
+Inside testng.xml.
+
+------------------------------------------------------------
+
+Q. What is the difference between test class and test block?
+
+Answer:
+
+Test Class:
+Java class containing @Test methods.
+
+Example:
+LoginTest.java
+
+Test Block:
+Logical execution group inside testng.xml.
+
+Example:
+
+<test name="Chrome">
+</test>
+
+------------------------------------------------------------
+
+Q. Difference between parallel="classes" and parallel="tests"?
+
+Answer:
+
+parallel="classes":
+Runs Java classes simultaneously.
+
+parallel="tests":
+Runs TestNG <test> blocks simultaneously.
+
+parallel="tests" is commonly used for Selenium Grid and cross-browser testing.
+
+============================================================
+IMPORTANT MEMORY TRICK
+============================================================
+
+Java Class
+=
+Test Logic
+
+testng.xml
+=
+Execution Configuration
+
+ChromeDriver
+=
+Local Execution
+
+RemoteWebDriver
+=
+Remote Execution
+
+Selenium Grid
+=
+Remote + Cross-Browser + Parallel Execution
+
+Hub
+=
+Manager
+
+Node
+=
+Worker / Execution Environment
