@@ -1,0 +1,583 @@
+JENKINS + SELENIUM + MAVEN REVISION NOTES
+
+1. COMPLETE FLOW
+Developer
+↓
+Push to GitHub
+↓
+Webhook
+↓
+Jenkins Job Starts
+↓
+Reads Jenkinsfile
+↓
+Checkout Application Repository
+↓
+Build Application (mvn clean package)
+↓
+Select Environment (QA/Prod Profile)
+↓
+Deploy to QA Server
+↓
+Trigger Automation Job OR Clone Automation Repository
+↓
+Automation Jenkinsfile
+↓
+mvn test
+↓
+Maven reads pom.xml
+↓
+Surefire Plugin reads testng.xml
+↓
+TestNG executes selected test classes
+↓
+Selenium opens browser
+↓
+Runs tests on QA URL
+↓
+XML Reports
+↓
+Jenkins publishes report and sends notification
+
+2. RESPONSIBILITIES
+- GitHub: Stores source code.
+- Webhook: Notifies Jenkins after push.
+- Jenkins: Orchestrates pipeline.
+- Maven: Builds project and runs tests.
+- pom.xml: Dependencies + plugins.
+- Surefire: Connects Maven to TestNG.
+- testng.xml: Chooses which tests run.
+- TestNG: Executes tests.
+- Selenium: Automates browser.
+
+3. WHY TWO REPOSITORIES?
+Application Repo:
+- React/Spring Boot
+- Owned by Developers
+
+Automation Repo:
+- Selenium Java
+- TestNG
+- Maven
+- Owned by QA
+
+4. METHOD 1 (ONE JENKINSFILE)
+Developer Push
+↓
+Application Jenkinsfile
+↓
+Build
+↓
+Deploy QA
+↓
+Clone Automation Repo
+↓
+Run Selenium
+↓
+Publish Report
+
+5. METHOD 2 (TWO JENKINSFILES)
+Developer Push
+↓
+Application Jenkinsfile
+↓
+Build
+↓
+Deploy QA
+↓
+build job: 'BankingAutomationPipeline'
+↓
+Automation Jenkins Job Starts
+↓
+Jenkins auto-clones automation repository
+↓
+Reads Automation Jenkinsfile
+↓
+Runs mvn test
+↓
+Publishes report
+
+NOTE: 'BankingAutomationPipeline' is the Jenkins Job Name, NOT the Jenkinsfile name.
+
+6. QA vs PRODUCTION
+Same source code. Different configuration.
+
+application-qa.properties -> QA database
+application-prod.properties -> Production database
+
+Jenkins selects profile:
+mvn clean package -Dspring.profiles.active=qa
+
+7. WHY NO git clone IN SECOND JENKINSFILE?
+Because Jenkins already cloned that repository before executing its Jenkinsfile.
+
+Use git URL only when another repository must be cloned.
+
+8. HOW DOES mvn test KNOW WHAT TO RUN?
+mvn test
+↓
+pom.xml
+↓
+Surefire Plugin
+↓
+testng.xml
+↓
+Specified Test Classes
+↓
+Selenium Executes
+
+9. TEST ENVIRONMENT
+- Separate server
+- Dummy database
+- Test users
+- QA URL
+- Safe for automation
+
+10. INTERVIEW QUESTIONS
+Q. Why separate repositories?
+A. Separate ownership and technologies.
+
+Q. Does Jenkins know which tests to run?
+A. No. Maven + TestNG decide.
+
+Q. How does Jenkins know QA database?
+A. Environment profile/configuration.
+
+Q. Why use Jenkins?
+A. Build, deploy, execute automation, publish reports.
+
+Q. Difference between Method 1 and Method 2?
+A. Method 1: one pipeline controls all.
+   Method 2: application pipeline triggers automation pipeline.
+
+11. MEMORY DIAGRAM
+Developer
+↓
+GitHub
+↓
+Webhook
+↓
+Jenkins
+↓
+Build
+↓
+Deploy QA
+↓
+Automation
+↓
+Maven
+↓
+pom.xml
+↓
+testng.xml
+↓
+Selenium
+↓
+Reports
+
+END
+
+
+
+
+
+
+
+
+JENKINS NOTES: WHEN TO USE checkout scm vs git
+
+1. BIG PICTURE
+
+Jenkins must have access to source code before it can build or test a project.
+The way Jenkins gets that source code determines whether checkout scm is needed.
+
+--------------------------------------------------
+2. CASE 1: PIPELINE FROM SCM (MOST COMMON)
+--------------------------------------------------
+
+Jenkins Configuration:
+
+Pipeline
+↓
+Pipeline Script From SCM
+↓
+Git Repository URL
+↓
+Jenkinsfile stored inside repository
+
+Repository:
+
+login-automation
+├── LoginTest.java
+├── pom.xml
+├── testng.xml
+└── Jenkinsfile
+
+What Jenkins Does:
+
+Step 1: Clone Repository
+↓
+Step 2: Read Jenkinsfile
+↓
+Step 3: Execute Pipeline
+
+Important:
+
+Before Jenkins executes the Jenkinsfile,
+it has already downloaded the repository.
+
+Therefore this works:
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                sh 'mvn clean compile'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+    }
+}
+
+Result:
+
+checkout scm is OPTIONAL.
+
+--------------------------------------------------
+3. CASE 2: PIPELINE SCRIPT INSIDE JENKINS UI
+--------------------------------------------------
+
+Jenkins Configuration:
+
+Pipeline
+↓
+Pipeline Script
+↓
+Script written directly in Jenkins UI
+
+In this case:
+
+Jenkins has a pipeline script
+but NO source code.
+
+So this fails:
+
+mvn clean compile
+
+because the project has not been downloaded.
+
+You must first download the repository.
+
+Example:
+
+stage('Checkout') {
+    steps {
+        checkout scm
+    }
+}
+
+OR
+
+stage('Checkout') {
+    steps {
+        git branch: 'main',
+            url: 'https://github.com/user/project.git'
+    }
+}
+
+Result:
+
+Checkout is REQUIRED.
+
+--------------------------------------------------
+4. WHAT DOES checkout scm MEAN?
+--------------------------------------------------
+
+Meaning:
+
+Download the SAME repository
+that is configured for this Jenkins Job.
+
+Use when:
+
+Same repository
+↓
+Current Jenkins Job
+↓
+Current Jenkinsfile
+
+Memory:
+
+Same Repository
+↓
+checkout scm
+
+--------------------------------------------------
+5. WHAT DOES git url(...) MEAN?
+--------------------------------------------------
+
+Meaning:
+
+Clone another repository by specifying URL.
+
+Example:
+
+Application Repository
+↓
+Needs Automation Repository
+↓
+Clone Second Repository
+
+Use:
+
+git branch: 'main',
+url: 'https://github.com/company/automation.git'
+
+Memory:
+
+Different Repository
+↓
+git url(...)
+
+--------------------------------------------------
+6. REAL PROJECT EXAMPLE
+--------------------------------------------------
+
+Repository 1:
+
+banking-app
+
+Repository 2:
+
+banking-automation
+
+Flow:
+
+Developer Push
+↓
+Application Jenkinsfile
+↓
+Build Application
+↓
+Deploy To QA
+↓
+Clone Automation Repo
+↓
+Run Selenium Tests
+
+Here:
+
+git url(...)
+
+is required because a second repository is needed.
+
+--------------------------------------------------
+7. WHY DO SOME TEAMS STILL USE checkout scm?
+--------------------------------------------------
+
+Even when Jenkins already cloned the repository,
+teams sometimes keep an explicit Checkout stage.
+
+Reason:
+
+Checkout
+↓
+Build
+↓
+Test
+↓
+Deploy
+
+This makes pipeline flow easier to read and maintain.
+
+--------------------------------------------------
+8. INTERVIEW QUESTIONS
+--------------------------------------------------
+
+Q. When do you use checkout scm?
+
+A.
+Use checkout scm when you want Jenkins to download the same repository configured for the current Jenkins job.
+
+Q. When do you use git url(...) ?
+
+A.
+Use git url(...) when the pipeline needs to clone an additional or completely different repository.
+
+Q. Is checkout scm always required?
+
+A.
+No. If Jenkinsfile is loaded using 'Pipeline Script From SCM', Jenkins may already have cloned the repository before executing the pipeline.
+
+--------------------------------------------------
+9. MEMORY DIAGRAM
+--------------------------------------------------
+
+Jenkinsfile Inside GitHub Repo
+↓
+Jenkins Clones Repo
+↓
+Reads Jenkinsfile
+↓
+Build/Test
+↓
+Checkout Often Optional
+
+--------------------------------
+
+Jenkinsfile Inside Jenkins UI
+↓
+No Repo Downloaded
+↓
+Need Checkout
+↓
+Build/Test
+
+--------------------------------------------------
+FINAL RULE
+--------------------------------------------------
+
+Same Repository
+↓
+checkout scm
+
+Different Repository
+↓
+git url(...)
+
+END
+
+
+
+
+
+
+SONARQUBE VS JENKINS - QUICK REVISION NOTES
+
+1. BIG PICTURE
+
+Developer
+↓
+GitHub
+↓
+Jenkins
+↓
+Build Application
+↓
+SonarQube Analysis
+↓
+Deploy
+↓
+Selenium Testing
+
+--------------------------------------------------
+2. WHAT IS JENKINS?
+--------------------------------------------------
+
+Jenkins = Automation Tool
+
+Used For:
+- Build projects
+- Run tests
+- Deploy applications
+- Schedule jobs
+- Execute pipelines
+
+Simple Question Jenkins Answers:
+
+"Can this code be built, tested and deployed automatically?"
+
+--------------------------------------------------
+3. WHAT IS SONARQUBE?
+--------------------------------------------------
+
+SonarQube = Code Quality Tool
+
+Used For:
+- Find bugs
+- Find code smells
+- Find security issues
+- Check duplicate code
+- Check test coverage
+
+Simple Question SonarQube Answers:
+
+"Is this code good quality?"
+
+--------------------------------------------------
+4. SIMPLE DIFFERENCE
+--------------------------------------------------
+
+Jenkins
+↓
+Automates Processes
+
+SonarQube
+↓
+Analyzes Code Quality
+
+--------------------------------------------------
+5. REAL EXAMPLE
+--------------------------------------------------
+
+Developer Pushes Code
+↓
+Jenkins Builds Project
+↓
+SonarQube Scans Code
+↓
+Quality Gate Check
+↓
+Deploy If Passed
+
+--------------------------------------------------
+6. MEMORY TRICK
+--------------------------------------------------
+
+Jenkins
+↓
+Can this code run?
+
+SonarQube
+↓
+Is this code good?
+
+Selenium
+↓
+Does the application work?
+
+--------------------------------------------------
+7. INTERVIEW ANSWERS
+--------------------------------------------------
+
+Q. What is Jenkins?
+A. Jenkins is a CI/CD automation tool used to build, test and deploy applications automatically.
+
+Q. What is SonarQube?
+A. SonarQube is a code quality analysis tool used to identify bugs, vulnerabilities, code smells and coverage issues.
+
+Q. Difference between Jenkins and SonarQube?
+A.
+Jenkins -> Automation of build/test/deploy.
+SonarQube -> Analysis of code quality.
+
+--------------------------------------------------
+FINAL MEMORY DIAGRAM
+--------------------------------------------------
+
+GitHub
+↓
+Jenkins (Build/Test/Deploy)
+↓
+SonarQube (Code Quality)
+↓
+Selenium (Application Testing)
+
+END
